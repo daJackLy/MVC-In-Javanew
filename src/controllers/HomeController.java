@@ -5,18 +5,24 @@ import java.io.File;
 import javax.swing.JMenuItem;
 import core.Controller;
 import views.HomeView;
+import models.Event;
 
 public class HomeController extends Controller{
     private HomeView homeView;
+    private EventController eventController;
     
     @Override
-    public void run()
-    {
-            // Initializes HomeView
-            homeView = new HomeView(this, mainFrame);
-            addView("HomeView", homeView);
+    public void run() {
+        eventController = new EventController();
+        homeView = new HomeView(this, eventController, mainFrame);
+        addView("HomeView", homeView);
 
-            // Displays the program window
-            mainFrame.setVisible(true);
-    }
+    mainFrame.setVisible(true);
 }
+
+    
+    
+
+}
+
+

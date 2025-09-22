@@ -4,14 +4,28 @@ import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import controllers.HomeController;
+import controllers.EventController;
 import core.Model;
 import core.View;
+
+
 
 @SuppressWarnings("serial")
 public class HomeView extends JPanel implements View
 {
-	@SuppressWarnings("unused")
+        private javax.swing.JTextField txtDescription;
+        private javax.swing.JTextField txtEmail;
+        private javax.swing.JTextField txtDate;
+        private javax.swing.JRadioButton rbDaily, rbWeekly, rbMonthly;
+        private javax.swing.JCheckBox chkAlarm;
+        private javax.swing.JButton btnSave, btnClean;
+
+        private javax.swing.JTable eventTable;
+        private javax.swing.table.DefaultTableModel tableModel;
+
+
 	private HomeController homeController;
+        private EventController eventController;
 	private JFrame mainFrame;
 	private final static int MAIN_FRAME_WIDTH = 800;
 	private final static int MAIN_FRAME_HEIGHT = 500;
@@ -44,51 +58,86 @@ public class HomeView extends JPanel implements View
                 panelAdd.setLayout(new java.awt.GridLayout(0, 1, 5, 5));
 
                 panelAdd.add(new javax.swing.JLabel("Event Description:"));
-                panelAdd.add(new javax.swing.JTextField(20));
+                txtDescription = new javax.swing.JTextField(20);
+                panelAdd.add(txtDescription);
 
                 panelAdd.add(new javax.swing.JLabel("Forward E-mail:"));
-                panelAdd.add(new javax.swing.JTextField(20));
+                txtEmail = new javax.swing.JTextField(20);
+                panelAdd.add(txtEmail);
 
                 panelAdd.add(new javax.swing.JLabel("Date:"));
-                panelAdd.add(new javax.swing.JTextField(15));
-
+                txtDate = new javax.swing.JTextField(15);
+                panelAdd.add(txtDate);
+                
                 panelAdd.add(new javax.swing.JLabel("Frequency:"));
-                javax.swing.JRadioButton daily = new javax.swing.JRadioButton("Daily");
-                javax.swing.JRadioButton weekly = new javax.swing.JRadioButton("Weekly");
-                javax.swing.JRadioButton monthly = new javax.swing.JRadioButton("Monthly");
+                rbDaily = new javax.swing.JRadioButton("Daily");
+                rbWeekly = new javax.swing.JRadioButton("Weekly");
+                rbMonthly = new javax.swing.JRadioButton("Monthly");
 
                 javax.swing.ButtonGroup group = new javax.swing.ButtonGroup();
-                group.add(daily);
-                group.add(weekly);
-                group.add(monthly);
+                group.add(rbDaily);
+                group.add(rbWeekly);
+                group.add(rbMonthly);
 
                 javax.swing.JPanel freqPanel = new javax.swing.JPanel();
-                freqPanel.add(daily);
-                freqPanel.add(weekly);
-                freqPanel.add(monthly);
+                freqPanel.add(rbDaily);
+                freqPanel.add(rbWeekly);
+                freqPanel.add(rbMonthly);
                 panelAdd.add(freqPanel);
 
-                panelAdd.add(new javax.swing.JCheckBox("Alarm"));
+                chkAlarm = new javax.swing.JCheckBox("Alarm");
+                panelAdd.add(chkAlarm);
 
+                btnSave = new javax.swing.JButton("Save");
+                btnClean = new javax.swing.JButton("Clean");
                 javax.swing.JPanel btnPanel = new javax.swing.JPanel();
-                btnPanel.add(new javax.swing.JButton("Save"));
-                btnPanel.add(new javax.swing.JButton("Clean"));
+                btnPanel.add(btnSave);
+                btnPanel.add(btnClean);
                 panelAdd.add(btnPanel);
+                
+                btnSave.addActionListener(e -> {
+                String description = txtDescription.getText();
+                String email = txtEmail.getText();
+                String date = txtDate.getText();
+
+                String frequency = "";
+                if (rbDaily.isSelected()) frequency = "Daily";
+                else if (rbWeekly.isSelected()) frequency = "Weekly";
+                else if (rbMonthly.isSelected()) frequency = "Monthly";
+
+                String alarm = chkAlarm.isSelected() ? "Yes" : "No";
+                models.Event event = new models.Event(date, description, frequency, email, alarm, false);
+
+                eventController.addEvent(event);
+
+                updateEventList();
+
+                txtDescription.setText("");
+                txtEmail.setText("");
+                txtDate.setText("");
+                chkAlarm.setSelected(false);
+                group.clearSelection();
+                });
 
                 tabs.addTab("Event Register", panelAdd);
 
-
-                
                 
                 
                 javax.swing.JPanel panelList = new javax.swing.JPanel();
-                panelList.add(new javax.swing.JScrollPane(new javax.swing.JList<String>()));
+                String[] columnNames = {"Description", "Date", "Frequency", "Email", "Alarm", "Selected"};
+                tableModel = new javax.swing.table.DefaultTableModel(columnNames, 0); // 0 filas iniciales
+                eventTable = new javax.swing.JTable(tableModel);
+                panelList.setLayout(new java.awt.BorderLayout());
+                panelList.add(new javax.swing.JScrollPane(eventTable), java.awt.BorderLayout.CENTER);
                 tabs.addTab("Event List", panelList);
+                
+
 
                 javax.swing.JPanel panelRemove = new javax.swing.JPanel();
                 panelRemove.add(new javax.swing.JScrollPane(new javax.swing.JList<String>()));
                 panelRemove.add(new javax.swing.JButton("Eliminar"));
                 tabs.addTab("Remove Event", panelRemove);
+                
 
   
                 javax.swing.JPanel panelGuest = new javax.swing.JPanel();
@@ -124,7 +173,31 @@ public class HomeView extends JPanel implements View
                 panelGuest.add(new javax.swing.JButton("Registrar invitado"));
                 tabs.addTab("Register", panelGuest);
 
-                // Agregar pestañas al frame
                 mainFrame.setContentPane(tabs);
 	}
+        
+        private void updateEventList() {
+            tableModel.setRowCount(0);
+            for (models.Event e : eventController.getEvents()) {
+                Object[] row = {
+                    e.getDescription(),
+                    e.getDate(),
+                    e.getFrequency(),
+                    e.getEmail(),
+                    e.getAlarm(),
+                    e.getSelected()
+                };
+                tableModel.addRow(row);
+            }
+        }
+        
+    public HomeView(HomeController homeController, EventController eventController, JFrame mainFrame) {
+        this.homeController = homeController;
+        this.eventController = eventController;
+        this.mainFrame = mainFrame;
+
+        make_mainFrame();
+    }
 }
+
+
